@@ -17,7 +17,7 @@ describe('Search route', () => {
             },
             json: sinon.stub()
         };
-        next = sinon.stub();
+        next = sinon.spy();
     });
 
     it('searches spotify\'s API for the requested search term', async () => {
@@ -33,9 +33,10 @@ describe('Search route', () => {
     });
 
     it('calls next with an error if there is a problem', async () => {
-        res.locals.spotifyApi.search = sinon.stub().throws('this is an error')
-        await search(req, res, next);
+        let error = new Error('this is an error');
+        res.locals.spotifyApi.search = sinon.stub().rejects(error);
 
-        sinon.assert.calledWith(next, sinon.match.instanceOf(Error));
+        await search(req, res, next);
+        sinon.assert.calledOnce(next);
     });
 });
