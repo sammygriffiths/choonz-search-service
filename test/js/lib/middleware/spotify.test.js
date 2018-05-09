@@ -68,5 +68,13 @@ describe('Spotify helper', () => {
 
             sinon.assert.calledWith(next, sinon.match.instanceOf(Error));
         });
+
+        it('calls next with an error if getting spotify token fails', async () => {
+            const next = sinon.spy();
+            dependencies.spotifyApi.clientCredentialsGrant = sinon.stub().rejects('This is an error');
+            await spotifyMiddleware.generateAccessToken(dependencies)({}, res, next);
+
+            sinon.assert.calledWith(next, sinon.match.instanceOf(Error));
+        });
     })
 });
