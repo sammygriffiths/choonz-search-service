@@ -37,6 +37,6 @@ describe('Search route', () => {
         res.locals.spotifyApi.search = sinon.stub().rejects(error);
 
         await search(req, res, next);
-        sinon.assert.calledOnce(next);
+        sinon.assert.calledWith(next, error);
     });
 });
