@@ -19,6 +19,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(spotifyMiddleware.generateAccessToken({ spotifyApi, cache }));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.REACT_APP_URL);
+  next();
+});
 
 app.use('/', api);
 
@@ -36,6 +40,7 @@ app.use((err, req, res, next) => {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
+  console.error(err);
   res.status(err.statusCode || 500);
   res.json({ error: err.message });
 });
