@@ -2,17 +2,29 @@ const express = require('express');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const spotifyMiddleware = require('./lib/api/middleware/spotify');
 const api = require('./lib/api');
+const NodeCache = require('node-cache');
+const SpotifyWebApi = require('spotify-web-api-node');
 
 const app = express();
+const cache = new NodeCache();
+const spotifyApi = new SpotifyWebApi({
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET
+});
 
-// uncomment after placing your favicon in /public
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(spotifyMiddleware.generateAccessToken({ spotifyApi, cache }));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.REACT_APP_URL);
+  next();
+});
 
-app.use('/', api('token'));
+app.use('/', api);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -28,7 +40,8 @@ app.use((err, req, res, next) => {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
+  console.error(err);
+  res.status(err.statusCode || 500);
   res.json({ error: err.message });
 });
 
